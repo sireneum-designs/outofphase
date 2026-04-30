@@ -106,7 +106,7 @@ export default function Contribution() {
         <blockquote className="blockquote">
           The architect who understands how a new idea meets an existing system — who can read it,
           structure it, and engage it — operates with a fundamentally different kind of leverage.
-          <cite>— from the research proposal</cite>
+          <cite></cite>
         </blockquote>
       </div>
     </div>
