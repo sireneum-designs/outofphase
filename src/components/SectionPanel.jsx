@@ -6,7 +6,6 @@ import Relevance     from '../sections/Relevance.jsx'
 import Questions     from '../sections/Questions.jsx'
 import Methodology   from '../sections/Methodology.jsx'
 import MiniPaths     from '../sections/MiniPaths.jsx'
-import Findings      from '../sections/Findings.jsx'
 import Peers         from '../sections/Peers.jsx'
 import Contribution  from '../sections/Contribution.jsx'
 import DesignProcess from '../sections/DesignProcess.jsx'
@@ -20,7 +19,6 @@ const SECTION_MAP = {
   questions:     Questions,
   methodology:   Methodology,
   minipaths:     MiniPaths,
-  findings:      Findings,
   peers:         Peers,
   contribution:  Contribution,
   designprocess: DesignProcess,
