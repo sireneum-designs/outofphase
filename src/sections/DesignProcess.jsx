@@ -339,9 +339,37 @@ export default function DesignProcess({ standalone = false }) {
       }, 'image/png')
     }
 
+    // ── Keyboard shortcuts ──────────────────────────────────────
+    function handleKeyDown(e) {
+      // S — save (without moving mouse)
+      if (e.key === 's' || e.key === 'S') {
+        if (!e.metaKey && !e.ctrlKey) {
+          e.preventDefault()
+          s.download?.(stateRef.current.showTrail)
+        }
+      }
+      // R — reset
+      if (e.key === 'r' || e.key === 'R') {
+        if (!e.metaKey && !e.ctrlKey) {
+          e.preventDefault()
+          s.reset?.()
+        }
+      }
+      // T — toggle trail
+      if (e.key === 't' || e.key === 'T') {
+        if (!e.metaKey && !e.ctrlKey) {
+          e.preventDefault()
+          setShowTrail(v => !v)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
     return () => {
       cancelAnimationFrame(s.raf)
       wrap.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('keydown', handleKeyDown)
       ro.disconnect()
     }
   }, [])
@@ -409,26 +437,32 @@ export default function DesignProcess({ standalone = false }) {
         <div style={{fontSize:'9px',color:'rgba(235,225,205,.14)',fontStyle:'italic',maxWidth:'380px',lineHeight:1.6,fontFamily:'var(--font-serif)'}}>
           cursor position = Julia parameter <em>c</em> · frost accumulates as a permanent record of your path
         </div>
-        <div style={{display:'flex',gap:'7px',flexShrink:0}}>
-          <button
-            onClick={() => setShowTrail(v => !v)}
-            style={btnStyle(showTrail ? 'rgba(235,225,205,.75)' : 'rgba(235,225,205,.3)')}
-          >
-            {showTrail ? 'trail off' : 'trail on'}
-          </button>
-          <button
-            onClick={() => stateRef.current.download?.(showTrail)}
-            disabled={saving}
-            style={btnStyle(saving ? 'rgba(235,225,205,.55)' : 'rgba(235,225,205,.3)')}
-          >
-            {saving ? 'saving…' : '↓ save'}
-          </button>
-          <button
-            onClick={() => stateRef.current.reset?.()}
-            style={btnStyle('rgba(235,225,205,.3)')}
-          >
-            reset
-          </button>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'5px',flexShrink:0}}>
+          {/* Keyboard shortcut hints */}
+          <div style={{fontSize:'7px',letterSpacing:'.14em',textTransform:'uppercase',color:'rgba(235,225,205,.12)',fontFamily:'var(--font-sans)'}}>
+            <span style={{color:'rgba(235,225,205,.22)'}}>S</span> save &nbsp;·&nbsp; <span style={{color:'rgba(235,225,205,.22)'}}>T</span> trail &nbsp;·&nbsp; <span style={{color:'rgba(235,225,205,.22)'}}>R</span> reset
+          </div>
+          <div style={{display:'flex',gap:'7px'}}>
+            <button
+              onClick={() => setShowTrail(v => !v)}
+              style={btnStyle(showTrail ? 'rgba(235,225,205,.75)' : 'rgba(235,225,205,.3)')}
+            >
+              {showTrail ? 'trail off' : 'trail on'}
+            </button>
+            <button
+              onClick={() => stateRef.current.download?.(showTrail)}
+              disabled={saving}
+              style={btnStyle(saving ? 'rgba(235,225,205,.55)' : 'rgba(235,225,205,.3)')}
+            >
+              {saving ? 'saving…' : '↓ save'}
+            </button>
+            <button
+              onClick={() => stateRef.current.reset?.()}
+              style={btnStyle('rgba(235,225,205,.3)')}
+            >
+              reset
+            </button>
+          </div>
         </div>
       </div>
     </div>

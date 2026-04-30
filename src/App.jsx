@@ -4,6 +4,34 @@ import SystemMap     from './components/SystemMap.jsx'
 import SectionPanel  from './components/SectionPanel.jsx'
 import DesignProcess from './sections/DesignProcess.jsx'
 
+const YEAR = new Date().getFullYear()
+
+// Persistent copyright line — appears on all views
+function Copyright({ light = false }) {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: '0.7rem',
+        right: '1.1rem',
+        fontSize: '0.55rem',
+        letterSpacing: '0.16em',
+        textTransform: 'uppercase',
+        color: light
+          ? 'rgba(26,25,21,0.28)'
+          : 'rgba(235,225,205,0.18)',
+        fontFamily: 'var(--font-sans)',
+        pointerEvents: 'none',
+        zIndex: 9999,
+        userSelect: 'none',
+        transition: 'color 0.6s',
+      }}
+    >
+      © {YEAR} Sireneum Designs
+    </div>
+  )
+}
+
 export default function App() {
   const [view,          setView]          = useState('landing')
   const [activeSection, setActiveSection] = useState(null)
@@ -45,6 +73,7 @@ export default function App() {
     return (
       <div style={{ width:'100vw', height:'100vh', background:'#060606', overflow:'hidden' }}>
         <DesignProcess standalone={true} />
+        <Copyright />
         {/* Back link */}
         <a
           href="/"
@@ -84,6 +113,9 @@ export default function App() {
 
   return (
     <div className="app" data-mode={portfolioMode ? 'portfolio' : 'research'}>
+
+      {/* Persistent copyright */}
+      <Copyright light={portfolioMode} />
 
       {/* Portfolio bar */}
       {portfolioMode && (
