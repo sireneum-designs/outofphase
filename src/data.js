@@ -1,5 +1,4 @@
 // ── MAP NODES ────────────────────────────────────────────────────
-// Coordinates for SVG viewBox "0 0 880 480"
 export const mapNodes = [
   {
     id: 'thesis',
@@ -16,10 +15,18 @@ export const mapNodes = [
     x: 165, y: 130,
   },
   {
+    id: 'designprocess',
+    label: 'Design Process',
+    tagline: 'The Path of My Curiosity',
+    desc: 'An interactive diagram — your cursor position shapes the mathematical structure. Your path leaves a permanent record.',
+    x: 80,  y: 200,
+    emphasis: true,
+  },
+  {
     id: 'relevance',
     label: 'Relevance',
     tagline: 'Architecture as Soil Science',
-    desc: 'Understanding and engaging with cultural \'soil\' must be of utmost importance to the architect.',
+    desc: 'Understanding and engaging with cultural soil must be of utmost importance to the architect.',
     x: 75, y: 275,
   },
   {
@@ -65,47 +72,51 @@ export const mapNodes = [
     desc: 'From framework to practice — implications for architecture in complex social systems.',
     x: 635, y: 415,
   },
-];
+]
 
 // ── MAP EDGES ────────────────────────────────────────────────────
 export const mapEdges = [
-  ['thesis',      'background'],
-  ['thesis',      'questions'],
-  ['thesis',      'contribution'],
-  ['background',  'relevance'],
-  ['background',  'methodology'],
-  ['questions',   'methodology'],
-  ['methodology', 'minipaths'],
-  ['methodology', 'findings'],
-  ['methodology', 'peers'],
-  ['minipaths',   'findings'],
-  ['minipaths',   'contribution'],
-  ['peers',       'contribution'],
-  ['findings',    'contribution'],
-];
+  ['thesis',        'background'],
+  ['thesis',        'questions'],
+  ['thesis',        'contribution'],
+  ['background',    'relevance'],
+  ['background',    'methodology'],
+  ['background',    'designprocess'],
+  ['designprocess', 'relevance'],
+  ['questions',     'methodology'],
+  ['methodology',   'minipaths'],
+  ['methodology',   'findings'],
+  ['methodology',   'peers'],
+  ['minipaths',     'findings'],
+  ['minipaths',     'contribution'],
+  ['peers',         'contribution'],
+  ['findings',      'contribution'],
+]
 
 // ── RELATED SECTIONS ─────────────────────────────────────────────
 export const related = {
-  thesis:       ['questions', 'background', 'contribution'],
-  background:   ['thesis', 'relevance', 'methodology'],
-  relevance:    ['background', 'thesis'],
-  questions:    ['thesis', 'methodology', 'findings'],
-  methodology:  ['questions', 'minipaths', 'findings'],
-  minipaths:    ['methodology', 'findings', 'contribution'],
-  findings:     ['minipaths', 'methodology', 'contribution'],
-  peers:        ['methodology', 'contribution'],
-  contribution: ['findings', 'thesis', 'peers'],
-};
+  thesis:        ['questions', 'background', 'contribution'],
+  background:    ['thesis', 'relevance', 'methodology', 'designprocess'],
+  designprocess: ['background', 'relevance', 'methodology'],
+  relevance:     ['background', 'thesis'],
+  questions:     ['thesis', 'methodology', 'findings'],
+  methodology:   ['questions', 'minipaths', 'findings'],
+  minipaths:     ['methodology', 'findings', 'contribution'],
+  findings:      ['minipaths', 'methodology', 'contribution'],
+  peers:         ['methodology', 'contribution'],
+  contribution:  ['findings', 'thesis', 'peers'],
+}
 
 // ── NODE LABEL MAP ───────────────────────────────────────────────
 export const nodeLabels = {
-  thesis:       'Thesis',
-  background:   'Background',
-  relevance:    'Relevance',
-  questions:    'Questions',
-  methodology:  'Methodology',
-  minipaths:    'Mini Paths',
-  findings:     'Findings',
-  peers:        'Peers',
-  contribution: 'Contribution',
-};
+  thesis:        'Thesis',
+  background:    'Background',
+  designprocess: 'Design Process',
+  relevance:     'Relevance',
+  questions:     'Questions',
+  methodology:   'Methodology',
+  minipaths:     'Mini Paths',
+  findings:      'Findings',
+  peers:         'Peers',
+  contribution:  'Contribution',
+}

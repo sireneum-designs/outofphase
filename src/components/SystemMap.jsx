@@ -1,26 +1,23 @@
 import { useState, useCallback } from 'react'
 import { mapNodes, mapEdges } from '../data.js'
+import JuliaBackground from './JuliaBackground.jsx'
 
 const VB_W = 880
 const VB_H = 480
 
-export default function SystemMap({ activeSection, onSelectSection, compressed }) {
+export default function SystemMap({ activeSection, onSelectSection, compressed, portfolioMode }) {
   const [hoveredId, setHoveredId] = useState(null)
 
   const nodeById = useCallback(
-    (id) => mapNodes.find((n) => n.id === id),
-    []
+    (id) => mapNodes.find((n) => n.id === id), []
   )
 
-  const isConnected = useCallback(
-    (id) => {
-      if (!activeSection) return false
-      return mapEdges.some(
-        ([a, b]) => (a === activeSection && b === id) || (b === activeSection && a === id)
-      )
-    },
-    [activeSection]
-  )
+  const isConnected = useCallback((id) => {
+    if (!activeSection) return false
+    return mapEdges.some(
+      ([a, b]) => (a === activeSection && b === id) || (b === activeSection && a === id)
+    )
+  }, [activeSection])
 
   const getNodeState = (node) => {
     if (node.id === activeSection) return 'active'
@@ -43,7 +40,6 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
     dimmed:    'var(--node-idle)',
     idle:      'var(--node-idle)',
   }
-
   const nodeR = { active: 9, hovered: 8, connected: 7, dimmed: 5, idle: 6 }
 
   return (
@@ -59,16 +55,12 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
         transition: 'padding var(--transition)',
       }}
     >
-      {/* Header — only when not compressed */}
+      {/* Julia set background — responds to mouse, very subtle */}
+      <JuliaBackground opacity={compressed ? 0.10 : 0.16} />
+
+      {/* Header */}
       {!compressed && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '1.8rem',
-            left: '2rem',
-            right: '2rem',
-          }}
-        >
+        <div style={{ position: 'absolute', top: '1.8rem', left: '2rem', right: '2rem' }}>
           <div className="t-label" style={{ marginBottom: '0.3rem' }}>
             System Map — click any node to explore
           </div>
@@ -78,21 +70,14 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
       {/* SVG Map */}
       <svg
         viewBox={`0 0 ${VB_W} ${VB_H}`}
-        style={{
-          width: '100%',
-          maxHeight: '100%',
-          overflow: 'visible',
-        }}
+        style={{ width: '100%', maxHeight: '100%', overflow: 'visible', position: 'relative', zIndex: 1 }}
       >
-        {/* ── EDGES ── */}
+        {/* Edges */}
         {mapEdges.map(([aId, bId]) => {
-          const a = nodeById(aId)
-          const b = nodeById(bId)
+          const a = nodeById(aId), b = nodeById(bId)
           if (!a || !b) return null
           const op = getEdgeOpacity(aId, bId)
-          const isActiveEdge =
-            aId === activeSection || bId === activeSection ||
-            aId === hoveredId    || bId === hoveredId
+          const isActiveEdge = aId===activeSection||bId===activeSection||aId===hoveredId||bId===hoveredId
           return (
             <line
               key={`${aId}-${bId}`}
@@ -105,13 +90,13 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
           )
         })}
 
-        {/* ── NODES ── */}
+        {/* Nodes */}
         {mapNodes.map((node) => {
-          const state = getNodeState(node)
-          const r     = nodeR[state]
-          const color = nodeColor[state]
-          const isActive   = state === 'active'
-          const isHovered  = state === 'hovered'
+          const state   = getNodeState(node)
+          const r       = nodeR[state]
+          const color   = nodeColor[state]
+          const isActive  = state === 'active'
+          const isHovered = state === 'hovered'
           const showDetail = isActive || isHovered
 
           return (
@@ -122,22 +107,12 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
               onMouseLeave={() => setHoveredId(null)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Glow ring for active/hovered */}
               {showDetail && (
-                <circle
-                  cx={node.x} cy={node.y}
-                  r={r + 8}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth="0.6"
-                  opacity="0.25"
-                />
+                <circle cx={node.x} cy={node.y} r={r+8}
+                  fill="none" stroke={color} strokeWidth="0.6" opacity="0.25" />
               )}
-
-              {/* Main dot */}
               <circle
-                cx={node.x} cy={node.y}
-                r={r}
+                cx={node.x} cy={node.y} r={r}
                 fill={color}
                 style={{
                   transition: 'r 0.2s, fill 0.2s',
@@ -146,11 +121,8 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
                     : 'none',
                 }}
               />
-
-              {/* Node label */}
               <text
-                x={node.x}
-                y={node.y - r - 8}
+                x={node.x} y={node.y - r - 8}
                 textAnchor="middle"
                 style={{
                   fontFamily: 'var(--font-sans)',
@@ -158,30 +130,18 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
                   fontWeight: 500,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  fill: isActive
-                    ? 'var(--accent)'
-                    : (state === 'dimmed' ? 'var(--text-muted)' : 'var(--text-secondary)'),
+                  fill: isActive ? 'var(--accent)'
+                    : state === 'dimmed' ? 'var(--text-muted)' : 'var(--text-secondary)',
                   transition: 'fill 0.2s',
                   userSelect: 'none',
                 }}
               >
                 {node.label}
               </text>
-
-              {/* Hover tagline */}
               {isHovered && !isActive && (
-                <text
-                  x={node.x}
-                  y={node.y + r + 18}
-                  textAnchor="middle"
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '9px',
-                    fontStyle: 'italic',
-                    fill: 'var(--text-muted)',
-                    userSelect: 'none',
-                  }}
-                >
+                <text x={node.x} y={node.y+r+18} textAnchor="middle"
+                  style={{ fontFamily:'var(--font-sans)', fontSize:'9px', fontStyle:'italic',
+                    fill:'var(--text-muted)', userSelect:'none' }}>
                   {node.tagline}
                 </text>
               )}
@@ -190,9 +150,35 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
         })}
       </svg>
 
-      {/* Hover tooltip panel */}
+      {/* Hover tooltip */}
       {hoveredId && !activeSection && (
         <HoverPanel node={nodeById(hoveredId)} />
+      )}
+
+      {/* Standalone design process link — bottom left */}
+      {!compressed && (
+        <a
+          href="/design-process"
+          style={{
+            position: 'absolute',
+            bottom: '1.4rem',
+            left: '2rem',
+            fontSize: '0.6rem',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'var(--text-muted)',
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            transition: 'color 0.2s',
+            zIndex: 2,
+          }}
+          onMouseEnter={e => e.currentTarget.style.color='var(--accent)'}
+          onMouseLeave={e => e.currentTarget.style.color='var(--text-muted)'}
+        >
+          ◇ explore design process animation fullscreen
+        </a>
       )}
     </div>
   )
@@ -201,32 +187,23 @@ export default function SystemMap({ activeSection, onSelectSection, compressed }
 function HoverPanel({ node }) {
   if (!node) return null
   return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: '2rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: 'var(--surface-raise)',
-        border: '1px solid var(--border-light)',
-        borderRadius: '4px',
-        padding: '0.75rem 1.25rem',
-        maxWidth: '340px',
-        textAlign: 'center',
-        pointerEvents: 'none',
-        animation: 'fadeUp 0.18s ease',
-      }}
-    >
-      <div className="t-label-accent" style={{ marginBottom: '0.35rem' }}>
-        {node.tagline}
-      </div>
+    <div style={{
+      position: 'absolute', bottom: '2rem', left: '50%',
+      transform: 'translateX(-50%)',
+      background: 'var(--surface-raise)',
+      border: '1px solid var(--border-light)',
+      borderRadius: '4px', padding: '0.75rem 1.25rem',
+      maxWidth: '340px', textAlign: 'center', pointerEvents: 'none',
+      animation: 'fadeUp 0.18s ease', zIndex: 2,
+    }}>
+      <div className="t-label-accent" style={{ marginBottom: '0.35rem' }}>{node.tagline}</div>
       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
         {node.desc}
       </div>
       <style>{`
         @keyframes fadeUp {
-          from { opacity: 0; transform: translate(-50%, 6px); }
-          to   { opacity: 1; transform: translate(-50%, 0); }
+          from { opacity:0; transform:translate(-50%,6px); }
+          to   { opacity:1; transform:translate(-50%,0); }
         }
       `}</style>
     </div>
