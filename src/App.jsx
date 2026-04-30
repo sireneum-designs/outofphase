@@ -73,7 +73,7 @@ export default function App() {
     return (
       <div style={{ width:'100vw', height:'100vh', background:'#060606', overflow:'hidden' }}>
         <DesignProcess standalone={true} />
-        <Copyright />
+        {/* Copyright omitted — standalone page has branding in header + save watermark */}
         {/* Back link */}
         <a
           href="/"

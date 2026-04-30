@@ -90,7 +90,7 @@ export default function DesignProcess({standalone=false}) {
   const [showTrail,    setShowTrail]    = useState(true)
   const [paramText,    setParamText]    = useState('')
   const [saving,       setSaving]       = useState(false)
-  const [showExplain,  setShowExplain]  = useState(false)
+  const [showExplain,  setShowExplain]  = useState(true)
 
   useEffect(()=>{
     const wrap = wrapRef.current
