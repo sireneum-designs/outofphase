@@ -55,8 +55,11 @@ export default function SystemMap({ activeSection, onSelectSection, compressed, 
         transition: 'padding var(--transition)',
       }}
     >
-      {/* Julia set background — responds to mouse, very subtle */}
-      <JuliaBackground opacity={compressed ? 0.10 : 0.16} />
+      {/* Julia set background — Julia subtle, frost clearly visible */}
+      <JuliaBackground
+        juliaOpacity={compressed ? 0.10 : 0.16}
+        frostOpacity={compressed ? 0.42 : 0.65}
+      />
 
       {/* Header */}
       {!compressed && (
