@@ -17,7 +17,7 @@ export const mapNodes = [
   {
     id: 'designprocess',
     label: 'Design Process',
-    tagline: 'The Path of My Curiosity',
+    tagline: 'Roots of Curiosity',
     desc: 'An interactive diagram — your cursor position shapes the mathematical structure. Your path leaves a permanent record.',
     x: 80,  y: 200,
     emphasis: true,

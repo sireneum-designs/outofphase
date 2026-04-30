@@ -14,12 +14,12 @@ function Copyright({ light = false }) {
         position: 'fixed',
         bottom: '0.7rem',
         right: '1.1rem',
-        fontSize: '0.55rem',
-        letterSpacing: '0.16em',
+        fontSize: '0.64rem',
+        letterSpacing: '0.14em',
         textTransform: 'uppercase',
         color: light
-          ? 'rgba(26,25,21,0.28)'
-          : 'rgba(235,225,205,0.18)',
+          ? 'rgba(26,25,21,0.42)'
+          : 'rgba(235,225,205,0.32)',
         fontFamily: 'var(--font-sans)',
         pointerEvents: 'none',
         zIndex: 9999,
@@ -120,6 +120,26 @@ export default function App() {
       {/* Portfolio bar */}
       {portfolioMode && (
         <div className="portfolio-bar">
+          {/* Back to map — only when a panel is open */}
+          {panelVisible && activeSection ? (
+            <>
+              <button
+                onClick={() => { setPanelVisible(false); setTimeout(() => setActiveSection(null), 450) }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '0.65rem', letterSpacing: '0.16em', textTransform: 'uppercase',
+                  color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)',
+                  display: 'flex', alignItems: 'center', gap: '0.35rem',
+                  transition: 'color 0.2s', padding: 0,
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
+              >
+                ← Map
+              </button>
+              <div className="portfolio-bar-divider" />
+            </>
+          ) : null}
           <span className="portfolio-bar-text">
             <span className="portfolio-bar-name">Rachel Dudley</span>
           </span>

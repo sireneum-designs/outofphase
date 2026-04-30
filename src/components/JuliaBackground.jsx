@@ -1,20 +1,16 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Julia background for the system map.
- *
- * Color scheme: dark grayscale exterior (max ~110 brightness),
- * near-black interior retained for high contrast with frost layer.
- * The concentric iso-contour banding is preserved — it's attractive
- * and emphasizes the mathematical structure.
- *
- * The "circle" at screen center is mathematically correct:
- * cursor center maps to c ≈ -0.25+0i, which produces a nearly
- * circular Julia set. Moving the cursor reshapes it into fractals.
+ * Three independent canvases:
+ *   jC  — Julia set, re-renders on cursor move, dark grayscale
+ *   frC — Frost accumulation, NEVER cleared, permanent record
+ *   trC — Current trail line, cleared each frame (the visible path)
  */
 export default function JuliaBackground({
   juliaOpacity = 0.22,
   frostOpacity  = 0.65,
+  trailOpacity  = 0.80,
+  resetRef      = null,
 }) {
   const wrapRef = useRef(null)
   const rafRef  = useRef(null)
@@ -25,19 +21,21 @@ export default function JuliaBackground({
 
     const jC  = wrap.querySelector('#jbg-j')
     const frC = wrap.querySelector('#jbg-fr')
+    const trC = wrap.querySelector('#jbg-tr')
     const jx  = jC.getContext('2d')
     const fr  = frC.getContext('2d')
+    const tr  = trC.getContext('2d')
 
     const s = {
       cx:-0.7269, cy:0.1889, tcx:-0.7269, tcy:0.1889,
       W:1, H:1, dpr:1,
       mx:0, my:0, prevMx:0, prevMy:0,
-      tips:[], blooms:[],
+      tips:[], blooms:[], trail:[],
       dropTimer:0, frame:0,
       needsRender:true,
     }
 
-    // ── Julia at 600×338 ─────────────────────────────────────
+    // ── Julia at 600×338, dark grayscale ──────────────────────
     const JW=600, JH=338
     const off=document.createElement('canvas')
     off.width=JW; off.height=JH
@@ -61,31 +59,22 @@ export default function JuliaBackground({
             zy=2*zx*zy+cy; zx=zx2-zy2+cx; n++
           }
           const i=(py*JW+px)*4
-
           if(n===MAX){
-            // ── Interior: true near-black, high contrast ──────
+            // Interior: near-black
             pd[i]=10; pd[i+1]=9; pd[i+2]=8; pd[i+3]=255
-
           } else {
-            // ── Exterior: DARK grayscale, max ~110 brightness ─
-            // The concentric banding is intentionally preserved.
-            // Slight warm bias (no more than +8) keeps it from
-            // feeling cold/clinical without going into sepia.
+            // Exterior: dark grayscale, max ~110 brightness, slight warm tint
             const t=Math.pow(n/MAX, 0.42)
-            const v=Math.round(18 + t*92)    // range: 18–110
-            const warm=Math.round(t*7)        // max +7 warm offset
-            pd[i]=v+warm                      // R
-            pd[i+1]=v+Math.round(warm*.4)     // G
-            pd[i+2]=v                         // B
-            pd[i+3]=255
+            const v=Math.round(18+t*92)
+            const w=Math.round(t*7)
+            pd[i]=v+w; pd[i+1]=v+Math.round(w*.4); pd[i+2]=v; pd[i+3]=255
           }
         }
       }
       ox.putImageData(imgData,0,0)
       jx.clearRect(0,0,s.W,s.H)
       jx.filter='blur(2px)'
-      jx.imageSmoothingEnabled=true
-      jx.imageSmoothingQuality='high'
+      jx.imageSmoothingEnabled=true; jx.imageSmoothingQuality='high'
       jx.drawImage(off,0,0,s.W,s.H)
       jx.filter='none'
     }
@@ -116,11 +105,11 @@ export default function JuliaBackground({
 
     // ── Frost tips ────────────────────────────────────────────
     const GEN=[
-      {maxAge:700, forkP:0.002,  alpha:0.58,lw:0.62,wobble:0.055,guided:true},
-      {maxAge:420, forkP:0.008,  alpha:0.40,lw:0.44,wobble:0.075,guided:true},
-      {maxAge:240, forkP:0.022,  alpha:0.25,lw:0.30,wobble:0.10, guided:false},
-      {maxAge:120, forkP:0.055,  alpha:0.14,lw:0.20,wobble:0.14, guided:false},
-      {maxAge:60,  forkP:0,      alpha:0.068,lw:0.12,wobble:0.18,guided:false},
+      {maxAge:700, forkP:0.002,  alpha:0.55,lw:0.60,wobble:0.055,guided:true},
+      {maxAge:420, forkP:0.008,  alpha:0.38,lw:0.42,wobble:0.075,guided:true},
+      {maxAge:240, forkP:0.022,  alpha:0.22,lw:0.28,wobble:0.10, guided:false},
+      {maxAge:120, forkP:0.055,  alpha:0.12,lw:0.18,wobble:0.14, guided:false},
+      {maxAge:60,  forkP:0,      alpha:0.058,lw:0.11,wobble:0.18,guided:false},
     ]
     const STEP=0.36, MAX_TIPS=1400
 
@@ -133,21 +122,13 @@ export default function JuliaBackground({
       for(let i=s.tips.length-1;i>=0;i--){
         const t=s.tips[i]; t.age++
         const g=GEN[t.gen]
-        if(t.age>g.maxAge||t.x<1||t.x>s.W-1||t.y<1||t.y>s.H-1){
-          s.tips.splice(i,1); continue
-        }
+        if(t.age>g.maxAge||t.x<1||t.x>s.W-1||t.y<1||t.y>s.H-1){s.tips.splice(i,1);continue}
         if(g.guided){
           t.st++
-          if(t.st>=22){
-            t.st=0
-            const iso=isoTangent(t.x,t.y)
-            const da=((iso-t.angle+Math.PI*3)%(Math.PI*2))-Math.PI
-            t.angle+=da*0.30
-          }
+          if(t.st>=22){t.st=0;const iso=isoTangent(t.x,t.y);const da=((iso-t.angle+Math.PI*3)%(Math.PI*2))-Math.PI;t.angle+=da*0.30}
         }
         t.angle+=(Math.random()-.5)*g.wobble
-        const nx=t.x+Math.cos(t.angle)*STEP
-        const ny=t.y+Math.sin(t.angle)*STEP
+        const nx=t.x+Math.cos(t.angle)*STEP, ny=t.y+Math.sin(t.angle)*STEP
         segs[t.gen].push(t.x,t.y,nx,ny); t.x=nx; t.y=ny
         if(g.forkP>0&&Math.random()<g.forkP&&t.gen<4&&s.tips.length<MAX_TIPS)
           forks.push({x:t.x,y:t.y,angle:t.angle,gen:t.gen+1})
@@ -183,9 +164,37 @@ export default function JuliaBackground({
           g.addColorStop(0,`rgba(192,184,168,${ba*1.6})`)
           g.addColorStop(.5,`rgba(172,165,152,${ba})`)
           g.addColorStop(1,`rgba(152,147,138,0)`)
-          fr.beginPath(); fr.arc(b.x,b.y,r,0,Math.PI*2)
-          fr.fillStyle=g; fr.fill()
+          fr.beginPath();fr.arc(b.x,b.y,r,0,Math.PI*2);fr.fillStyle=g;fr.fill()
         }
+      }
+    }
+
+    // ── Trail (drawn to cleared trC canvas each frame) ────────
+    const TMAX=500
+    function drawTrail(){
+      tr.clearRect(0,0,s.W,s.H)
+      const tl=s.trail.length
+      if(tl<2) return
+      const window=200  // last N points show as bright trail
+      const st=Math.max(0,tl-window)
+      for(let i=st;i<tl-1;i++){
+        const t=(i-st)/window
+        tr.beginPath()
+        // Bright glowing line — warm white, fades at tail
+        tr.strokeStyle=`rgba(248,240,225,${t*0.68})`
+        tr.lineWidth=t*1.4+0.3
+        tr.lineCap='round'
+        tr.moveTo(s.trail[i].x,s.trail[i].y)
+        tr.lineTo(s.trail[i+1].x,s.trail[i+1].y)
+        tr.stroke()
+      }
+      // Bright cursor tip
+      if(tl>0){
+        const pulse=0.5+0.5*Math.sin(s.frame*0.08)
+        tr.beginPath(); tr.arc(s.mx,s.my,2.5,0,Math.PI*2)
+        tr.fillStyle=`rgba(255,252,248,${0.88+pulse*0.12})`; tr.fill()
+        tr.beginPath(); tr.arc(s.mx,s.my,5+pulse*3,0,Math.PI*2)
+        tr.strokeStyle=`rgba(240,228,205,${0.18*pulse})`; tr.lineWidth=0.8; tr.stroke()
       }
     }
 
@@ -197,6 +206,10 @@ export default function JuliaBackground({
       if(Math.abs(s.cx-prevCx)>0.0004||Math.abs(s.cy-prevCy)>0.0004||s.needsRender){
         renderJulia(); s.needsRender=false
       }
+      // Trail
+      s.trail.push({x:s.mx,y:s.my})
+      if(s.trail.length>TMAX) s.trail.shift()
+
       s.dropTimer++
       if(s.dropTimer>=16){
         const angle=Math.atan2(s.my-s.prevMy,s.mx-s.prevMx)
@@ -208,6 +221,7 @@ export default function JuliaBackground({
       }
       s.prevMx=s.mx; s.prevMy=s.my
       updateBlooms(); updateTips()
+      drawTrail()
     }
 
     // ── Resize ────────────────────────────────────────────────
@@ -215,11 +229,12 @@ export default function JuliaBackground({
       s.dpr=Math.min(window.devicePixelRatio||1,2)
       const rect=wrap.getBoundingClientRect()
       s.W=rect.width; s.H=rect.height
-      for(const c of[jC,frC]){
+      for(const c of[jC,frC,trC]){
         c.width=Math.round(s.W*s.dpr); c.height=Math.round(s.H*s.dpr)
       }
       jx.setTransform(s.dpr,0,0,s.dpr,0,0)
       fr.setTransform(s.dpr,0,0,s.dpr,0,0)
+      tr.setTransform(s.dpr,0,0,s.dpr,0,0)
       s.needsRender=true
     }
 
@@ -234,6 +249,18 @@ export default function JuliaBackground({
     const ro=new ResizeObserver(resize)
     ro.observe(wrap)
     window.addEventListener('mousemove',handleMouseMove)
+
+    // Expose reset to parent via resetRef prop
+    if (resetRef) {
+      resetRef.current = () => {
+        s.tips.length = 0
+        s.blooms.length = 0
+        s.trail.length = 0
+        fr.clearRect(0, 0, s.W, s.H)
+        // trC is cleared automatically each frame
+      }
+    }
+
     tick()
 
     return()=>{
@@ -247,12 +274,13 @@ export default function JuliaBackground({
     <div ref={wrapRef} style={{position:'absolute',inset:0,pointerEvents:'none'}}>
       <canvas id="jbg-j"
         style={{position:'absolute',inset:0,width:'100%',height:'100%',display:'block',
-          opacity:juliaOpacity, transition:'opacity 1s ease'}}
-      />
+          opacity:juliaOpacity,transition:'opacity 1s ease'}}/>
       <canvas id="jbg-fr"
         style={{position:'absolute',inset:0,width:'100%',height:'100%',display:'block',
-          opacity:frostOpacity, transition:'opacity 1s ease'}}
-      />
+          opacity:frostOpacity,transition:'opacity 1s ease'}}/>
+      <canvas id="jbg-tr"
+        style={{position:'absolute',inset:0,width:'100%',height:'100%',display:'block',
+          opacity:trailOpacity,transition:'opacity 1s ease'}}/>
     </div>
   )
 }
