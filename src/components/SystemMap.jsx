@@ -82,6 +82,18 @@ export default function SystemMap({ activeSection, onSelectSection, compressed, 
             System Map — click any node to explore
           </div>
         </div>
+        <button
+          onClick={()=>onSelectSection('sources')}
+          style={{
+            fontSize:'0.62rem',letterSpacing:'0.14em',textTransform:'uppercase',
+            color:'rgba(200,180,154,0.30)',background:'none',border:'none',
+            padding:0,cursor:'pointer',transition:'color 0.2s',
+          }}
+          onMouseEnter={e=>e.currentTarget.style.color='rgba(200,180,154,0.75)'}
+          onMouseLeave={e=>e.currentTarget.style.color='rgba(200,180,154,0.30)'}
+        >
+          sources
+        </button>
       )}
 
       {/* SVG Map */}

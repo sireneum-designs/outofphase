@@ -53,7 +53,7 @@ export const mapNodes = [
   },
   {
     id: 'findings',
-    label: 'Findings',
+    label: 'Results',
     tagline: 'What the Research Reveals',
     desc: 'Emerging patterns across community surveys, interviews, and participatory interventions.',
     x: 215, y: 378,
@@ -116,7 +116,7 @@ export const nodeLabels = {
   questions:     'Questions',
   methodology:   'Methodology',
   minipaths:     'Mini Paths',
-  findings:      'Findings',
+  findings:      'Results',
   peers:         'Peers',
   contribution:  'Contribution',
 }

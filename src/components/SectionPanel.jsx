@@ -10,6 +10,8 @@ import Findings      from '../sections/Findings.jsx'
 import Peers         from '../sections/Peers.jsx'
 import Contribution  from '../sections/Contribution.jsx'
 import DesignProcess from '../sections/DesignProcess.jsx'
+import Results  from '../sections/Results.jsx'
+import Sources  from '../sections/Sources.jsx'
 
 const SECTION_MAP = {
   thesis:        Thesis,
@@ -22,6 +24,8 @@ const SECTION_MAP = {
   peers:         Peers,
   contribution:  Contribution,
   designprocess: DesignProcess,
+  findings:      Results,
+  sources:       Sources,
 }
 
 export default function SectionPanel({ sectionId, onClose, onNavigate, visible }) {

@@ -61,13 +61,13 @@ export default function JuliaBackground({
           const i=(py*JW+px)*4
           if(n===MAX){
             // Interior: near-black
-            pd[i]=10; pd[i+1]=9; pd[i+2]=8; pd[i+3]=255
+            pd[i]=32; pd[i+1]=28; pd[i+2]=22; pd[i+3]=255
           } else {
             // Exterior: dark grayscale, max ~110 brightness, slight warm tint
-            const t=Math.pow(n/MAX, 0.42)
-            const v=Math.round(18+t*92)
-            const w=Math.round(t*7)
-            pd[i]=v+w; pd[i+1]=v+Math.round(w*.4); pd[i+2]=v; pd[i+3]=255
+            const t=Math.pow(n/MAX, 0.38)
+            const v=Math.round(t*225)
+            const w=Math.round(t*22*(1-t)*4)
+            pd[i]=v+w; pd[i+1]=v+Math.round(w*.5); pd[i+2]=v; pd[i+3]=255
           }
         }
       }
