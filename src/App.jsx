@@ -35,7 +35,6 @@ function Copyright({ light = false }) {
 export default function App() {
   const [view,          setView]          = useState('landing')
   const [activeSection, setActiveSection] = useState(null)
-  const [portfolioMode, setPortfolioMode] = useState(false)
   const [panelVisible,  setPanelVisible]  = useState(false)
 
   // ── Route: /design-process → fullscreen standalone ──────────
@@ -112,54 +111,23 @@ export default function App() {
   }
 
   return (
-    <div className="app" data-mode={portfolioMode ? 'portfolio' : 'research'}>
+    <div className="app">
 
       {/* Persistent copyright */}
-      <Copyright light={portfolioMode} />
+      <Copyright />
 
-      {/* Portfolio bar */}
-      {portfolioMode && (
-        <div className="portfolio-bar">
-          {/* Back to map — only when a panel is open */}
-          {panelVisible && activeSection ? (
-            <>
-              <button
-                onClick={() => { setPanelVisible(false); setTimeout(() => setActiveSection(null), 450) }}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '0.65rem', letterSpacing: '0.16em', textTransform: 'uppercase',
-                  color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)',
-                  display: 'flex', alignItems: 'center', gap: '0.35rem',
-                  transition: 'color 0.2s', padding: 0,
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-              >
-                ← Map
-              </button>
-              <div className="portfolio-bar-divider" />
-            </>
-          ) : null}
-          <span className="portfolio-bar-text">
-            <span className="portfolio-bar-name">Rachel Dudley</span>
-          </span>
-          <div className="portfolio-bar-divider" />
-          <span className="portfolio-bar-text">ARC 651 · Research Proposal</span>
-          <div className="portfolio-bar-divider" />
-          <span className="portfolio-bar-text">Spring 2026 · Arizona State University</span>
-        </div>
-      )}
-
-      {/* Mode toggle */}
+      {/* Presentation link */}
       {view !== 'landing' && (
-        <button
+        <a
+          href="https://drive.google.com/file/d/1X-YAD3ndv_aCmVVhkT-AaGzjEfo_pfcQ/view?usp=sharing"
+          target="_blank"
+          rel="noopener noreferrer"
           className="mode-toggle"
-          onClick={() => setPortfolioMode(m => !m)}
-          style={{ top: portfolioMode ? '57px' : '1.1rem' }}
+          style={{ top: '1.1rem', textDecoration: 'none' }}
         >
           <span className="mode-toggle-dot" />
-          {portfolioMode ? 'Research View' : 'Portfolio View'}
-        </button>
+          Presentation
+        </a>
       )}
 
       {/* Landing */}
@@ -170,7 +138,7 @@ export default function App() {
         <>
           <div style={{
             position: 'absolute',
-            top: portfolioMode ? '44px' : 0,
+            top: 0,
             left: 0, bottom: 0,
             width: panelOpen ? '38%' : '100%',
             transition: 'width var(--transition)',
@@ -180,7 +148,6 @@ export default function App() {
               activeSection={activeSection}
               onSelectSection={openSection}
               compressed={panelOpen}
-              portfolioMode={portfolioMode}
             />
           </div>
 
